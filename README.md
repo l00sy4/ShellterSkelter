@@ -3,12 +3,13 @@ ShellterSkelter is a tool for encrypting/obfuscating payloads. It outputs the en
 
 ### Usage
 
-`.\ShellterSkelter payload.bin output.txt AES MAC`
+`.\ShellterSkelter payload.bin output.cpp AES MAC`
 
 Supported encryption types:
 - NONE (in this case the payload will only be obfuscated)
 - XOR
 - AES
+
 Supported obfuscation types:
 - MACfuscation
 - IPv4fuscation
