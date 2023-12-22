@@ -11,6 +11,7 @@ Supported encryption types:
 - AES
 
 Supported obfuscation types:
+- NONE (in this case the payload will only be encrypted)
 - MACfuscation
 - IPv4fuscation
 - UUIDfuscation
