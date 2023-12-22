@@ -1,4 +1,4 @@
-#include "libs/aes.c"
+#include "aes.c"
 #include <iostream>
 #include <random>
 #include <stdio.h>
@@ -360,8 +360,8 @@ int main(int argc, char* argv[]) {
     if (encryptionAlgorithm != "AES" && encryptionAlgorithm != "XOR" && encryptionAlgorithm != "NONE") {
         printf("[!] Please select a valid encryption algorithm. Currently supported options: AES, XOR, NONE (case sensitive)\n");
     }
-    if (obfuscationMethod != "MAC" && obfuscationMethod != "IPv4" && obfuscationMethod != "UUID") {
-        printf("\n[!] Please select a valid obfuscation method. Currently supported options: IPv4, MAC, UUID (case sensitive)\n");
+    if (obfuscationMethod != "MAC" && obfuscationMethod != "IPv4" && obfuscationMethod != "UUID" && obfuscationMethod != "NONE") {
+        printf("\n[!] Please select a valid obfuscation method. Currently supported options: IPv4, MAC, UUID, NONE (case sensitive)\n");
     }
 
     // Get the size of the file
@@ -431,9 +431,35 @@ int main(int argc, char* argv[]) {
     // Encrypt
     if (encryptionAlgorithm == "AES") {
         EncryptAES(file_size, payload, outputFile);
+
+        if (obfuscationMethod == "NONE") {
+            fprintf(outputFile, "\nunsigned char* payload[%ld] = {\n", file_size);
+            for (size_t i = 0; i <= file_size; i++) {
+                if (i == file_size) {
+                    fprintf(outputFile, "0x%x ", payload[i]);
+                }
+                else {
+                    fprintf(outputFile, "0x%x, ", payload[i]);
+                }
+            }
+            fprintf(outputFile, "\n};");
+        }
     }
     if (encryptionAlgorithm == "XOR") {
         EncryptXOR(file_size, payload, outputFile);
+
+        if (obfuscationMethod == "NONE") {
+            fprintf(outputFile, "\nunsigned char* payload[%ld] = {\n", file_size);
+            for (size_t i = 0; i <= file_size; i++) {
+                if (i == file_size) {
+                    fprintf(outputFile, "0x%x ", payload[i]);
+                }
+                else {
+                    fprintf(outputFile, "0x%x, ", payload[i]);
+                }
+            }
+            fprintf(outputFile, "\n};");
+        }
     }
     else {
 
