@@ -20,7 +20,7 @@ Supported obfuscation types:
 - Add RC4
 - Add UUIDfuscation
 - Add the option to select key size (currently, keys are 128 bits)
-- Better padding support
+- Add padding support
 
 ### Example
 
