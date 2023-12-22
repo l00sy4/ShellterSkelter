@@ -1,3 +1,4 @@
+**WIP**
 
 ShellterSkelter is a tool for encrypting/obfuscating payloads. It outputs the encrypted and obfuscated payload into a file, along with the decryption/deobfuscation function.
 
