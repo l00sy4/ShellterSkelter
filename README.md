@@ -1,4 +1,3 @@
-**WIP**
 
 ShellterSkelter is a tool for encrypting/obfuscating payloads. It outputs the encrypted and obfuscated payload into a file, along with the decryption/deobfuscation function.
 
@@ -14,13 +13,16 @@ Supported encryption types:
 Supported obfuscation types:
 - MACfuscation
 - IPv4fuscation
+- UUIDfuscation
+
+Misc features:
+- Padding
 
 ### To-do
 
 - Add RC4
-- Add UUIDfuscation
 - Add the option to select key size (currently, keys are 128 bits)
-- Add padding support
+- Add key encryption
 
 ### Example
 
