@@ -45,6 +45,7 @@ Misc features:
 ## To-do
 
 - Add key encryption
+- Better argument handling
 
 
 ## Example
