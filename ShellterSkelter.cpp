@@ -479,9 +479,9 @@ void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
 int main(int argc, char* argv[]) {
 
     // Check if the correct number of arguments have been passed
-    if (argc != 6) 
+    if (argc != 5 || argc == 5 && argv[4] == NULL)
     {
-        std::cout << "\n[!] Usage: " << argv[0] << " <PayloadFile: payload.bin> <OutputFile: output.cpp> <EncryptionMethod: AES> <KeySizeInBytes> <ObfuscationMethod>\n\n";
+        std::cout << "\n[!] Usage: " << argv[0] << " <PayloadFile: payload.bin> <OutputFile: output.cpp> <EncryptionMethod: AES> <KeySizeInBytes: 16> <ObfuscationMethod: MAC>\n\n";
         return 1;
     }
 
