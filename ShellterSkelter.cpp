@@ -481,7 +481,7 @@ int main(int argc, char* argv[]) {
     const std::string encryptionAlgorithm = argv[3];
 
     // Check if the correct number of arguments have been passed
-    if (argc != 5 && encryptionAlgorithm != "NONE")
+    if (argc != 5)
     {
         std::cout << "\n[!] Usage: " << argv[0] << " <PayloadFile: payload.bin> <OutputFile: output.cpp> <EncryptionMethod: AES> <KeySizeInBytes: 16> <ObfuscationMethod: MAC>\n\n";
         return 1;
