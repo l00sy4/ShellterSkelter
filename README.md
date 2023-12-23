@@ -1,4 +1,4 @@
-### Description
+## Description
 
 ShellterSkelter is a tool for encrypting/obfuscating payloads. 
 
@@ -8,7 +8,8 @@ Afterwards, it will randomly generate a key (and IV, if using AES) of the specif
 
 Finally, it will obfuscate the (encrypted) payload using the specified method. The payload and deobfuscation function will be written into the selected output file.
 
-### Usage
+
+## Usage
 
 ```
 .\ShellterSkelter payload.bin output.cpp AES 16 MAC
@@ -40,13 +41,16 @@ Supported obfuscation types:
 Misc features:
 - Padding
 
-### To-do
+
+## To-do
 
 - Add key encryption
 
-### Example
+
+## Example
 
 ![ShellterSkelter](Images/ExampleUsage.gif)
+
 
 ### Credits
 
