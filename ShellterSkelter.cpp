@@ -478,8 +478,10 @@ void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
 
 int main(int argc, char* argv[]) {
 
+    const std::string encryptionAlgorithm = argv[3];
+
     // Check if the correct number of arguments have been passed
-    if (argc != 5 || argc == 5 && argv[4] == NULL)
+    if (argc != 5 && encryptionAlgorithm != "NONE")
     {
         std::cout << "\n[!] Usage: " << argv[0] << " <PayloadFile: payload.bin> <OutputFile: output.cpp> <EncryptionMethod: AES> <KeySizeInBytes: 16> <ObfuscationMethod: MAC>\n\n";
         return 1;
@@ -502,7 +504,6 @@ int main(int argc, char* argv[]) {
     }
 
     // Define the encryption and obfuscation type
-    const std::string encryptionAlgorithm = argv[3];
     DWORD KeySize = atoi(argv[4]);
     const std::string obfuscationMethod = argv[5];
 
