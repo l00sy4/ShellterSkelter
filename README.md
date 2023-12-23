@@ -2,9 +2,9 @@
 
 ShellterSkelter is a tool for encrypting/obfuscating payloads. 
 
-It reads the payload from a user-specified file, then it will pad it with NOP bytes according to the selected obfuscation method (MACfuscation/IPv4fuscation/UUIDfuscation require the payload's size to be a multiple of 6, 4 respectively 16). If no obfuscation method was selected, or the payload is already a multiple of 6/4/16, it will skip padding. 
+It reads the payload from a user-specified file, then it will pad it with NOP bytes according to the selected obfuscation method (MACfuscation/IPv4fuscation/UUIDfuscation require the payload's size to be a multiple of 6, 4 respectively 16). If no obfuscation method was selected or the payload is already a multiple of 6/4/16, it will skip padding. 
 
-Afterwards, it will randomly generate a key (and IV, if using AES) of the specified size in bytes and encrypt the payload using the specified method. The key (and IV) will be written into the selected output file, alongside the decryption function. If no obfuscation method was specified, the payload will also be written into the output file.
+Afterwards, it will randomly generate a key (and IV, if using AES) of the specified size (in bytes) and encrypt the payload using the specified method. The key (and IV) will be written into the selected output file alongside the decryption function. If no obfuscation method was specified, the payload will also be written into the output file.
 
 Finally, it will obfuscate the (encrypted) payload using the specified method. The payload and deobfuscation function will be written into the selected output file.
 
