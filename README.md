@@ -16,7 +16,7 @@ Finally, it will obfuscate the (encrypted) payload using the specified method. T
 > This will encrypt the payload using AES (Key and IV will be 16 bytes) and transform it into an array of MAC addresses. Then, the decryption/deobfuscation functions will be written in the `output.cpp` file.
 
 ```
-.\ShellterSkelter payload.bin output.cpp NONE UUID
+.\ShellterSkelter payload.bin output.cpp NONE 0 UUID
 ```
 > This won't encrypt the payload, it will just transform it into an array of UUIDs. Again, the deobfuscation function will be written in the `output.cpp` file.
 
