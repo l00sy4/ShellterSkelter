@@ -5,7 +5,7 @@ It reads the payload from a user-specified file, then it will pad it with NOP by
 
 Afterwards, it will randomly generate a key (and IV, if using AES) and encrypt the payload using the specified method. The key (and IV) will be written into the selected output file, alongside the decryption function. If no obfuscation method was specified, the payload will also be written into the output file.
 
-Finally, it will obfuscate the encrypted payload using the specified method. The payload and deobfuscation function will be written into the selected output file.
+Finally, it will obfuscate the (encrypted) payload using the specified method. The payload and deobfuscation function will be written into the selected output file.
 
 ### Usage
 
