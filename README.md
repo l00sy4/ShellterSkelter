@@ -17,7 +17,7 @@ Finally, it will obfuscate the (encrypted) payload using the specified method. T
 ```
 .\ShellterSkelter payload.bin output.cpp NONE UUID
 ```
-> This won't encrypt the payload, it will just transform it into an array of UUIDs. Again, the deobfuscation function wil be written in the `output.cpp` file.
+> This won't encrypt the payload, it will just transform it into an array of UUIDs. Again, the deobfuscation function will be written in the `output.cpp` file.
 
 ```
 .\ShellterSkelter payload.bin output.cpp XOR NONE
