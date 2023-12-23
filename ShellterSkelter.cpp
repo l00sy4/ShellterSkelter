@@ -1,7 +1,5 @@
 #include "aes.c"
-#include <bit>
 #include <iostream>
-#include <random>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -13,6 +11,7 @@
 
 // ---------------------------------------------------------------------------
 // ############################## Misc #######################################
+
 
 // Round up to the nearest multiple
 long roundUp(long numToRound, long multiple)
@@ -31,6 +30,7 @@ long roundUp(long numToRound, long multiple)
     }
     return numToRound + multiple - remainder;
 }
+
 
 // Generate N random bytes using CryptGenRandom
 std::vector<unsigned char> GenerateKey(DWORD KeySize)
@@ -76,6 +76,7 @@ std::vector<unsigned char> GenerateKey(DWORD KeySize)
 // ---------------------------------------------------------------------------
 // ########################## UUIDfuscation ##################################
 
+
 // Generate UUID output whilst keeping track of endianess
 const char* GenerateUUID(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p) 
 {
@@ -93,6 +94,7 @@ const char* GenerateUUID(int a, int b, int c, int d, int e, int f, int g, int h,
 
     return (const char*)result;
 }
+
 
 // Convert the encrypted payload to an UUID array
 void GenerateUUIDOutput(SIZE_T payloadSize, unsigned char* payload, FILE* file) 
@@ -160,6 +162,7 @@ void GenerateUUIDOutput(SIZE_T payloadSize, unsigned char* payload, FILE* file)
 // ---------------------------------------------------------------------------
 // ######################### IPv4fuscation ###################################
 
+
 // generate IPv4 output
 const char* GenerateIPv4(uint32_t ip) 
 {
@@ -175,6 +178,7 @@ const char* GenerateIPv4(uint32_t ip)
     return (const char*)Output;
 }
 
+
 // Generate hex IPv4 output
 uint32_t GenerateIPv4Hex(int a, int b, int c, int d) 
 {
@@ -182,6 +186,7 @@ uint32_t GenerateIPv4Hex(int a, int b, int c, int d)
 
     return result;
 }
+
 
 // Convert the encrypted payload to a IPv4 array
 void GenerateIPv4Output(SIZE_T payloadSize, unsigned char* payload, FILE* file) {
@@ -243,6 +248,7 @@ void GenerateIPv4Output(SIZE_T payloadSize, unsigned char* payload, FILE* file) 
 // ---------------------------------------------------------------------------
 // ####################### MACfuscation ######################################
 
+
 // Generate MAC output
 const char* GenerateMAC(uint64_t MAC) 
 {
@@ -260,6 +266,7 @@ const char* GenerateMAC(uint64_t MAC)
     return (const char*)Output;
 }
 
+
 // Generate hex MAC values
 uint64_t GenerateMACHex(int a, int b, int c, int d, int e, int f) 
 {
@@ -267,6 +274,7 @@ uint64_t GenerateMACHex(int a, int b, int c, int d, int e, int f)
 
     return result;
 }
+
 
 // Convert the encrypted payload to a MAC address array
 void GenerateMACOutput(SIZE_T payloadSize, unsigned char* payload, FILE* file) {
@@ -329,7 +337,8 @@ void GenerateMACOutput(SIZE_T payloadSize, unsigned char* payload, FILE* file) {
 // ---------------------------------------------------------------------------
 // ###################### Encryption functions ###############################
 
-void EncryptAES(SIZE_T file_size, unsigned char* payload, FILE* file) 
+
+void EncryptAES(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeySize) 
 {
 
     // print the header
@@ -338,8 +347,8 @@ void EncryptAES(SIZE_T file_size, unsigned char* payload, FILE* file)
     fprintf(file, "%s", WriteHeader);
 
     // Generate a key and IV
-    std::vector <unsigned char> Key_init = GenerateKey(16);
-    std::vector <unsigned char> IV_init = GenerateKey(16);
+    std::vector <unsigned char> Key_init = GenerateKey(KeySize);
+    std::vector <unsigned char> IV_init = GenerateKey(KeySize);
     
     const unsigned char* Key = Key_init.data();
     const unsigned char* IV = IV_init.data();
@@ -369,14 +378,15 @@ void EncryptAES(SIZE_T file_size, unsigned char* payload, FILE* file)
     fprintf(file, "\nAES_ctx ctx = { 0 };\nAES_init_ctx_iv(&ctx, key, iv);\nAES_CBC_decrypt_buffer(&ctx, payload, sizeof(payload));\n");
 }
 
-void EncryptXOR(SIZE_T file_size, unsigned char* payload, FILE* file) 
+
+void EncryptXOR(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeySize) 
 {
 
     char WriteHeader[256] = "#include <Windows.h>\n#include <stdio.h>\n#include <Ip2string.h>\n#pragma comment(lib, \"Ntdll.lib\")\n\n#ifndef NT_SUCCESS\n#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)\n#endif\n";
     fprintf(file, "%s", WriteHeader);
 
     // Generate a random key
-    std::vector <unsigned char> Key = GenerateKey(16);
+    std::vector <unsigned char> Key = GenerateKey(KeySize);
 
     // XOR with every byte of the key for hardening
     for (size_t i = 0, j = 0; i < file_size; i++, j++) 
@@ -400,6 +410,7 @@ void EncryptXOR(SIZE_T file_size, unsigned char* payload, FILE* file)
     fprintf(file, "\nfor (size_t i = 0, j = 0; i < file_size; i++, j++) {\n\tif (j == Key.size()) {\n\t\tj = 0;\n\t}\n\tpayload[i] = payload[i] ^ Key[j];\n}\n");
 }
 
+
 // The USTRING structure. Needed for SystemFunction032
 typedef struct USTRING
 {
@@ -412,18 +423,17 @@ typedef struct USTRING
 // Declare the SystemFunction032 pointer function
 typedef NTSTATUS(NTAPI* findSystemFunction032)(struct USTRING* Data, struct USTRING* Key);
 
-void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file) 
+void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeySize) 
 {
 
     char WriteHeader[256] = "#include <Windows.h>\n#include <stdio.h>\n#include <Ip2string.h>\n#pragma comment(lib, \"Ntdll.lib\")\n\n#ifndef NT_SUCCESS\n#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)\n#endif\n";
     fprintf(file, "%s", WriteHeader);
 
     // Generate a random key
-    std::vector <unsigned char> Key = GenerateKey(16);
+    std::vector <unsigned char> Key = GenerateKey(KeySize);
 
     NTSTATUS STATUS = NULL;
     DWORD dPayloadSize = static_cast<DWORD>(file_size);
-    DWORD KeySize = Key.size();
     PVOID pKey = reinterpret_cast<PVOID>(Key.data());
     PVOID pPayload = reinterpret_cast<PBYTE>(payload);
 
@@ -465,12 +475,13 @@ void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file)
 // ---------------------------------------------------------------------------
 // ############################ Main #########################################
 
+
 int main(int argc, char* argv[]) {
 
     // Check if the correct number of arguments have been passed
-    if (argc != 5) 
+    if (argc != 6) 
     {
-        std::cout << "Usage: " << argv[0] << " <PayloadFile> <OutputFile> <EncryptionMethod> <ObfuscationMethod>\n";
+        std::cout << "\n[!] Usage: " << argv[0] << " <PayloadFile: payload.bin> <OutputFile: output.cpp> <EncryptionMethod: AES> <KeySizeInBytes> <ObfuscationMethod>\n\n";
         return 1;
     }
 
@@ -492,7 +503,8 @@ int main(int argc, char* argv[]) {
 
     // Define the encryption and obfuscation type
     const std::string encryptionAlgorithm = argv[3];
-    const std::string obfuscationMethod = argv[4];
+    DWORD KeySize = atoi(argv[4]);
+    const std::string obfuscationMethod = argv[5];
 
     // Check for correct usage
     if (encryptionAlgorithm != "AES" && encryptionAlgorithm != "XOR" && encryptionAlgorithm != "RC4" && encryptionAlgorithm != "NONE")
@@ -588,7 +600,7 @@ int main(int argc, char* argv[]) {
     // Encrypt
     if (encryptionAlgorithm == "AES") 
     {
-        EncryptAES(file_size, payload, outputFile);
+        EncryptAES(file_size, payload, outputFile, KeySize);
 
         // If no obfuscation method was specified, just write the payload
         if (obfuscationMethod == "NONE") 
@@ -613,7 +625,7 @@ int main(int argc, char* argv[]) {
 
     if (encryptionAlgorithm == "XOR") 
     {
-        EncryptXOR(file_size, payload, outputFile);
+        EncryptXOR(file_size, payload, outputFile, KeySize);
 
         // If no obfuscation method was specified, just write the payload
         if (obfuscationMethod == "NONE") 
@@ -636,7 +648,7 @@ int main(int argc, char* argv[]) {
     }
     if (encryptionAlgorithm == "RC4") {
 
-        EncryptRC4(file_size, payload, outputFile);
+        EncryptRC4(file_size, payload, outputFile, KeySize);
 
         // If no obfuscation method was specified, just write the payload
         if (obfuscationMethod == "NONE")
