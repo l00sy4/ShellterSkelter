@@ -45,6 +45,7 @@ Misc features:
 
 ## To-do
 - Better argument handling
+- Make the payload be printed on one line
 
 
 ## Example
