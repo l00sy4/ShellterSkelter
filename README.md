@@ -49,7 +49,7 @@ Misc features:
 
 ## Example
 
-![ShellterSkelter](Images/ExampleUsage.gif)
+![ShellterSkelter](Img/ExampleUsage2.gif)
 
 
 ### Credits
