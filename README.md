@@ -1,12 +1,12 @@
 ## Description
 
-ShellterSkelter is a tool for encrypting/obfuscating payloads. 
+ShellterSkelter is a payload encryption/obfuscation tool.
 
-It reads the payload from a user-specified file, then it will pad it with NOP bytes according to the selected obfuscation method (MACfuscation/IPv4fuscation/UUIDfuscation require the payload's size to be a multiple of 6, 4 respectively 16). If no obfuscation method was selected or the payload is already a multiple of 6/4/16, it will skip padding. 
+It reads the payload from a file specified by the user, then pads it with NOP bytes according to the selected obfuscation method (MACfuscation/IPv4fuscation/UUIDfuscation requires the payload size to be a multiple of 6, 4 or 16). If no obfuscation method is selected, or if the payload is already a multiple of 6/4/16, padding is skipped.
 
-Afterwards, it will randomly generate a key (and IV, if using AES) of the specified size (in bytes) and encrypt the payload using the specified method. A "Magic Byte" from the key will be randomly chosen to be the XOR key which will be used to encrypt the key. The Fowler-Noll-Vo hash of the magic byte will be computed and printed out, along with the FNV function itself and encrypted key. A function to decrypt the key at runtime is also printed. 
+It will then randomly generate a key (and IV if using AES) of the specified size (in bytes) and encrypt the payload using the specified method. A "magic byte" from the key is randomly chosen to be the XOR key used to encrypt the key. The Fowler-Noll-Vo hash of the magic byte is computed and printed, along with the FNV function itself and the encrypted key. A function to decrypt the key at runtime is also printed.
 
-Finally, it will obfuscate the (encrypted) payload using the specified method. The payload and deobfuscation function will be written into the selected output file.
+Finally, the (encrypted) payload is obfuscated using the specified method. The payload and the deobfuscation function are written to the selected output file.
 
 
 ## Usage
